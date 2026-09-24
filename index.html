@@ -1,422 +1,1037 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#07090d">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="AAA Whack-A-Mole - fast arcade reflex game, vanilla JS, 60fps.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1018'/%3E%3Cellipse cx='32' cy='44' rx='22' ry='9' fill='%23150d04'/%3E%3Ccircle cx='32' cy='30' r='16' fill='%238a5a34'/%3E%3Ccircle cx='26' cy='27' r='3' fill='%23fff'/%3E%3Ccircle cx='38' cy='27' r='3' fill='%23fff'/%3E%3Ccircle cx='32' cy='36' r='3' fill='%23e0708a'/%3E%3C/svg%3E">
-<title>Whack-A-Mole</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:#07090d;color:#eaf0f7;
- font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
- -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
- -webkit-touch-callout:none;overscroll-behavior:none}
-#c{position:fixed;inset:0;display:block;touch-action:none}
-#hud{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:6px;
- padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 8px calc(10px + env(safe-area-inset-left));
- pointer-events:none}
-.stat{flex:1 1 0;min-width:0;background:rgba(18,26,38,.72);border:1px solid rgba(120,170,255,.14);
- border-radius:12px;padding:6px 4px;text-align:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.stat span{display:block;font-size:9px;letter-spacing:.14em;opacity:.55;font-weight:700}
-.stat b{display:block;font-size:clamp(15px,4.4vw,22px);font-weight:800;line-height:1.15;
- font-variant-numeric:tabular-nums;transition:color .2s}
-#combo b{color:#ffd257}
-#time.low b{color:#ff5566}
-#lives b{color:#68e08a}
-#pauseBtn{pointer-events:auto;flex:0 0 auto;width:44px;height:44px;border:1px solid rgba(120,170,255,.18);
- background:rgba(18,26,38,.72);color:#eaf0f7;border-radius:12px;font-size:15px;font-weight:800;
- letter-spacing:2px;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-#pauseBtn:active{transform:scale(.94)}
-.ov{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;
- justify-content:center;gap:14px;text-align:center;padding:24px;
- padding-top:calc(24px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom));
- background:radial-gradient(120% 90% at 50% 30%,rgba(20,30,46,.86),rgba(4,6,10,.95));
- -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.ov.hide{display:none}
-@supports not ((backdrop-filter:blur(8px)) or (-webkit-backdrop-filter:blur(8px))){
- .stat,#pauseBtn{background:rgba(14,20,30,.94)}
- .ov{background:radial-gradient(120% 90% at 50% 30%,rgba(16,24,36,.985),rgba(3,5,9,.995))}
-}
-h1{font-size:clamp(30px,10vw,58px);font-weight:900;letter-spacing:-.02em;line-height:1;
- background:linear-gradient(180deg,#fff,#ffb64a);-webkit-background-clip:text;background-clip:text;
- -webkit-text-fill-color:transparent}
-h2{font-size:clamp(24px,7vw,40px);font-weight:900;letter-spacing:-.01em}
-p{max-width:420px;font-size:clamp(12px,3.4vw,15px);opacity:.72;line-height:1.5}
-.k{font-size:11px;letter-spacing:.2em;opacity:.55;font-weight:700}
-.big{font-size:clamp(44px,14vw,80px);font-weight:900;color:#ffd257;line-height:1;
- font-variant-numeric:tabular-nums}
-.btn{pointer-events:auto;min-width:min(280px,78vw);padding:14px 22px;border-radius:14px;border:0;
- font-size:clamp(14px,4vw,17px);font-weight:800;letter-spacing:.06em;cursor:pointer;
- background:linear-gradient(180deg,#ffcf5c,#ff9b2f);color:#2a1600;
- box-shadow:0 6px 0 #a75f14,0 10px 24px rgba(255,150,40,.28);transition:transform .06s,box-shadow .06s}
-.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #a75f14}
-.btn.alt{background:linear-gradient(180deg,#5a6b86,#3b4761);color:#eaf0f7;box-shadow:0 6px 0 #232c3c}
-.btn.alt:active{box-shadow:0 2px 0 #232c3c}
-.pulse{animation:p .5s ease}
-@keyframes p{0%{transform:scale(1)}45%{transform:scale(1.28)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.pulse{animation:none}.btn{transition:none}}
-</style>
-</head>
-<body>
-<noscript><div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;background:#07090d;color:#eaf0f7;font-family:system-ui,sans-serif">Whack-A-Mole requires JavaScript to run. Please enable JavaScript and reload.</div></noscript>
-<canvas id="c"></canvas>
-<div id="hud">
-  <div class="stat"><span>SCORE</span><b id="score">0</b></div>
-  <div class="stat" id="combo"><span>COMBO</span><b>x1</b></div>
-  <div class="stat" id="time"><span>TIME</span><b>60</b></div>
-  <div class="stat" id="lives"><span>LIVES</span><b>3</b></div>
-  <button id="pauseBtn" aria-label="Pause" style="display:none">II</button>
-</div>
-<div id="ovStart" class="ov">
-  <h1>WHACK-A-MOLE</h1>
-  <p>TAP THE MOLES. AVOID THE BOMBS. CHAIN HITS TO BUILD A COMBO MULTIPLIER.</p>
-  <button class="btn" id="playBtn">PLAY</button>
-  <p class="k">BEST <b id="best0">0</b></p>
-</div>
-<div id="ovPause" class="ov hide">
-  <h2>PAUSED</h2>
-  <button class="btn" id="resumeBtn">RESUME</button>
-  <button class="btn alt" id="restartBtn">RESTART</button>
-  <button class="btn alt" id="soundBtn">SOUND: ON</button>
-  <button class="btn alt" id="titleBtn">TITLE</button>
-</div>
-<div id="ovOver" class="ov hide">
-  <h2 id="ovMsg">TIME UP</h2>
-  <div class="k">SCORE</div><div class="big" id="ovScore">0</div>
-  <p class="k">BEST <b id="ovBest">0</b></p>
-  <button class="btn" id="retryBtn">PLAY AGAIN</button>
-  <button class="btn alt" id="menuBtn">MENU</button>
-</div>
-<script>
-(()=>{"use strict";
-const c=document.getElementById("c"),x=c.getContext("2d",{alpha:false}),$=i=>document.getElementById(i);
-const scoreEl=$("score"),comboEl=document.querySelector("#combo b"),timeEl=document.querySelector("#time b"),timeBox=$("time"),livesEl=document.querySelector("#lives b"),pauseBtn=$("pauseBtn");
-const ovStart=$("ovStart"),ovPause=$("ovPause"),ovOver=$("ovOver"),ovMsg=$("ovMsg"),best0=$("best0");
-const COLS=3,ROWS=3,ROUND=60,TAU=6.283185307;
-const MENU=0,PLAY=1,PAUSE=2,OVER=3;
-let state=MENU,score=0,combo=0,lives=3,timeLeft=ROUND,elapsed=0,spawnT=0,shake=0,last=0;
-function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
-function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
-let best=+(lsGet("wam_best")||0);
-let sound=lsGet("wam_snd")!=="0";
-let reduced=false;
-try{reduced=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}catch(e){}
-const shk=v=>reduced?0:v;
-let W=0,H=0,DPR=1,cell=60,rh=18,mr=14,bx=0,by=0;
-let bgG=null,holeG=null,moleG=null,bombG=null,safe={t:0,r:0,b:0,l:0};
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#07090d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="description"
+      content="AAA Whack-A-Mole - fast arcade reflex game, vanilla JS, 60fps."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1018'/%3E%3Cellipse cx='32' cy='44' rx='22' ry='9' fill='%23150d04'/%3E%3Ccircle cx='32' cy='30' r='16' fill='%238a5a34'/%3E%3Ccircle cx='26' cy='27' r='3' fill='%23fff'/%3E%3Ccircle cx='38' cy='27' r='3' fill='%23fff'/%3E%3Ccircle cx='32' cy='36' r='3' fill='%23e0708a'/%3E%3C/svg%3E"
+    />
+    <title>Whack-A-Mole</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: #07090d;
+        color: #eaf0f7;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+      }
+      #c {
+        position: fixed;
+        inset: 0;
+        display: block;
+        touch-action: none;
+      }
+      #hud {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: calc(8px + env(safe-area-inset-top))
+          calc(10px + env(safe-area-inset-right)) 8px
+          calc(10px + env(safe-area-inset-left));
+        pointer-events: none;
+      }
+      .stat {
+        flex: 1 1 0;
+        min-width: 0;
+        background: rgba(18, 26, 38, 0.72);
+        border: 1px solid rgba(120, 170, 255, 0.14);
+        border-radius: 12px;
+        padding: 6px 4px;
+        text-align: center;
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+      }
+      .stat span {
+        display: block;
+        font-size: 9px;
+        letter-spacing: 0.14em;
+        opacity: 0.55;
+        font-weight: 700;
+      }
+      .stat b {
+        display: block;
+        font-size: clamp(15px, 4.4vw, 22px);
+        font-weight: 800;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+        transition: color 0.2s;
+      }
+      #combo b {
+        color: #ffd257;
+      }
+      #time.low b {
+        color: #ff5566;
+      }
+      #lives b {
+        color: #68e08a;
+      }
+      #pauseBtn {
+        pointer-events: auto;
+        flex: 0 0 auto;
+        width: 44px;
+        height: 44px;
+        border: 1px solid rgba(120, 170, 255, 0.18);
+        background: rgba(18, 26, 38, 0.72);
+        color: #eaf0f7;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        cursor: pointer;
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+      }
+      #pauseBtn:active {
+        transform: scale(0.94);
+      }
+      .ov {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        text-align: center;
+        padding: 24px;
+        padding-top: calc(24px + env(safe-area-inset-top));
+        padding-bottom: calc(24px + env(safe-area-inset-bottom));
+        background: radial-gradient(
+          120% 90% at 50% 30%,
+          rgba(20, 30, 46, 0.86),
+          rgba(4, 6, 10, 0.95)
+        );
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+      }
+      .ov.hide {
+        display: none;
+      }
+      @supports not (
+        (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))
+      ) {
+        .stat,
+        #pauseBtn {
+          background: rgba(14, 20, 30, 0.94);
+        }
+        .ov {
+          background: radial-gradient(
+            120% 90% at 50% 30%,
+            rgba(16, 24, 36, 0.985),
+            rgba(3, 5, 9, 0.995)
+          );
+        }
+      }
+      h1 {
+        font-size: clamp(30px, 10vw, 58px);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        background: linear-gradient(180deg, #fff, #ffb64a);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      h2 {
+        font-size: clamp(24px, 7vw, 40px);
+        font-weight: 900;
+        letter-spacing: -0.01em;
+      }
+      p {
+        max-width: 420px;
+        font-size: clamp(12px, 3.4vw, 15px);
+        opacity: 0.72;
+        line-height: 1.5;
+      }
+      .k {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        opacity: 0.55;
+        font-weight: 700;
+      }
+      .big {
+        font-size: clamp(44px, 14vw, 80px);
+        font-weight: 900;
+        color: #ffd257;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .btn {
+        pointer-events: auto;
+        min-width: min(280px, 78vw);
+        padding: 14px 22px;
+        border-radius: 14px;
+        border: 0;
+        font-size: clamp(14px, 4vw, 17px);
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        background: linear-gradient(180deg, #ffcf5c, #ff9b2f);
+        color: #2a1600;
+        box-shadow:
+          0 6px 0 #a75f14,
+          0 10px 24px rgba(255, 150, 40, 0.28);
+        transition:
+          transform 0.06s,
+          box-shadow 0.06s;
+      }
+      .btn:active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 #a75f14;
+      }
+      .btn.alt {
+        background: linear-gradient(180deg, #5a6b86, #3b4761);
+        color: #eaf0f7;
+        box-shadow: 0 6px 0 #232c3c;
+      }
+      .btn.alt:active {
+        box-shadow: 0 2px 0 #232c3c;
+      }
+      .pulse {
+        animation: p 0.5s ease;
+      }
+      @keyframes p {
+        0% {
+          transform: scale(1);
+        }
+        45% {
+          transform: scale(1.28);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .pulse {
+          animation: none;
+        }
+        .btn {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <noscript
+      ><div
+        style="
+          position: fixed;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          text-align: center;
+          background: #07090d;
+          color: #eaf0f7;
+          font-family: system-ui, sans-serif;
+        "
+      >
+        Whack-A-Mole requires JavaScript to run. Please enable JavaScript and
+        reload.
+      </div></noscript
+    >
+    <canvas id="c"></canvas>
+    <div id="hud">
+      <div class="stat"><span>SCORE</span><b id="score">0</b></div>
+      <div class="stat" id="combo"><span>COMBO</span><b>x1</b></div>
+      <div class="stat" id="time"><span>TIME</span><b>60</b></div>
+      <div class="stat" id="lives"><span>LIVES</span><b>3</b></div>
+      <button id="pauseBtn" aria-label="Pause" style="display: none">II</button>
+    </div>
+    <div id="ovStart" class="ov">
+      <h1>WHACK-A-MOLE</h1>
+      <p>
+        TAP THE MOLES. AVOID THE BOMBS. CHAIN HITS TO BUILD A COMBO MULTIPLIER.
+      </p>
+      <button class="btn" id="playBtn">PLAY</button>
+      <p class="k">BEST <b id="best0">0</b></p>
+    </div>
+    <div id="ovPause" class="ov hide">
+      <h2>PAUSED</h2>
+      <button class="btn" id="resumeBtn">RESUME</button>
+      <button class="btn alt" id="restartBtn">RESTART</button>
+      <button class="btn alt" id="soundBtn">SOUND: ON</button>
+      <button class="btn alt" id="titleBtn">TITLE</button>
+    </div>
+    <div id="ovOver" class="ov hide">
+      <h2 id="ovMsg">TIME UP</h2>
+      <div class="k">SCORE</div>
+      <div class="big" id="ovScore">0</div>
+      <p class="k">BEST <b id="ovBest">0</b></p>
+      <button class="btn" id="retryBtn">PLAY AGAIN</button>
+      <button class="btn alt" id="menuBtn">MENU</button>
+    </div>
+    <script>
+      (() => {
+        "use strict";
+        const c = document.getElementById("c"),
+          x = c.getContext("2d", { alpha: false }),
+          $ = (i) => document.getElementById(i);
+        const scoreEl = $("score"),
+          comboEl = document.querySelector("#combo b"),
+          timeEl = document.querySelector("#time b"),
+          timeBox = $("time"),
+          livesEl = document.querySelector("#lives b"),
+          pauseBtn = $("pauseBtn");
+        const ovStart = $("ovStart"),
+          ovPause = $("ovPause"),
+          ovOver = $("ovOver"),
+          ovMsg = $("ovMsg"),
+          best0 = $("best0");
+        const COLS = 3,
+          ROWS = 3,
+          ROUND = 60,
+          TAU = 6.283185307;
+        const MENU = 0,
+          PLAY = 1,
+          PAUSE = 2,
+          OVER = 3;
+        let state = MENU,
+          score = 0,
+          combo = 0,
+          lives = 3,
+          timeLeft = ROUND,
+          elapsed = 0,
+          spawnT = 0,
+          shake = 0,
+          last = 0;
+        function lsGet(k) {
+          try {
+            return localStorage.getItem(k);
+          } catch (e) {
+            return null;
+          }
+        }
+        function lsSet(k, v) {
+          try {
+            localStorage.setItem(k, v);
+          } catch (e) {}
+        }
+        let best = +(lsGet("wam_best") || 0);
+        let sound = lsGet("wam_snd") !== "0";
+        let reduced = false;
+        try {
+          reduced = !!(
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          );
+        } catch (e) {}
+        const shk = (v) => (reduced ? 0 : v);
+        let W = 0,
+          H = 0,
+          DPR = 1,
+          cell = 60,
+          rh = 18,
+          mr = 14,
+          bx = 0,
+          by = 0;
+        let bgG = null,
+          holeG = null,
+          moleG = null,
+          bombG = null,
+          safe = { t: 0, r: 0, b: 0, l: 0 };
 
-const holes=[];
-for(let j=0;j<ROWS;j++)for(let i=0;i<COLS;i++)holes.push({i,j,cx:0,cy:0,st:"empty",t:0,dur:0,type:0,hitT:0,sq:0});
-const fx=[];
+        const holes = [];
+        for (let j = 0; j < ROWS; j++)
+          for (let i = 0; i < COLS; i++)
+            holes.push({
+              i,
+              j,
+              cx: 0,
+              cy: 0,
+              st: "empty",
+              t: 0,
+              dur: 0,
+              type: 0,
+              hitT: 0,
+              sq: 0,
+            });
+        const fx = [];
 
-const probe=document.createElement("div");
-probe.style.cssText="position:fixed;top:0;left:0;width:0;height:0;pointer-events:none;padding-top:env(safe-area-inset-top);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left)";
-document.body.appendChild(probe);
-function readSafe(){const s=getComputedStyle(probe);safe.t=parseFloat(s.paddingTop)||0;safe.r=parseFloat(s.paddingRight)||0;safe.b=parseFloat(s.paddingBottom)||0;safe.l=parseFloat(s.paddingLeft)||0;}
+        const probe = document.createElement("div");
+        probe.style.cssText =
+          "position:fixed;top:0;left:0;width:0;height:0;pointer-events:none;padding-top:env(safe-area-inset-top);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left)";
+        document.body.appendChild(probe);
+        function readSafe() {
+          const s = getComputedStyle(probe);
+          safe.t = parseFloat(s.paddingTop) || 0;
+          safe.r = parseFloat(s.paddingRight) || 0;
+          safe.b = parseFloat(s.paddingBottom) || 0;
+          safe.l = parseFloat(s.paddingLeft) || 0;
+        }
 
-function resize(){
-  DPR=Math.min(window.devicePixelRatio||1,2);
-  W=window.innerWidth;H=window.innerHeight;
-  c.width=Math.round(W*DPR);c.height=Math.round(H*DPR);
-  c.style.width=W+"px";c.style.height=H+"px";
-  readSafe();layout();
-}
-function layout(){
-  const land=W>H;
-  const padX=Math.max(14,W*.05)+safe.l+safe.r;
-  const padTop=(land?64:104)+safe.t;
-  const padBot=20+safe.b;
-  const availW=W-padX*2,availH=Math.max(80,H-padTop-padBot);
-  cell=Math.max(42,Math.min(availW/COLS,availH/ROWS));
-  const bw=cell*COLS,bh=cell*ROWS;
-  bx=(W-bw)/2;by=padTop+Math.max(0,(availH-bh)/2);
-  rh=cell*.30;mr=cell*.235;
-  for(const h of holes){h.cx=bx+(h.i+.5)*cell;h.cy=by+(h.j+.62)*cell;}
-  bgG=x.createRadialGradient(W*.5,H*.12,0,W*.5,H*.55,Math.max(W,H)*.85);
-  bgG.addColorStop(0,"#17222f");bgG.addColorStop(.55,"#0b1018");bgG.addColorStop(1,"#04060a");
-  holeG=x.createRadialGradient(0,-rh*.15,rh*.05,0,0,rh*1.05);
-  holeG.addColorStop(0,"#281a09");holeG.addColorStop(.7,"#150d04");holeG.addColorStop(1,"#060302");
-  moleG=x.createRadialGradient(-mr*.35,-mr*.45,mr*.1,0,0,mr*1.15);
-  moleG.addColorStop(0,"#bd8d61");moleG.addColorStop(.55,"#8a5a34");moleG.addColorStop(1,"#5a3620");
-  bombG=x.createRadialGradient(-mr*.35,-mr*.4,mr*.08,0,0,mr*1.15);
-  bombG.addColorStop(0,"#4c5568");bombG.addColorStop(1,"#141822");
-}
+        function resize() {
+          DPR = Math.min(window.devicePixelRatio || 1, 2);
+          W = window.innerWidth;
+          H = window.innerHeight;
+          c.width = Math.round(W * DPR);
+          c.height = Math.round(H * DPR);
+          c.style.width = W + "px";
+          c.style.height = H + "px";
+          readSafe();
+          layout();
+        }
+        function layout() {
+          const land = W > H;
+          const padX = Math.max(14, W * 0.05) + safe.l + safe.r;
+          const padTop = (land ? 64 : 104) + safe.t;
+          const padBot = 20 + safe.b;
+          const availW = W - padX * 2,
+            availH = Math.max(80, H - padTop - padBot);
+          cell = Math.max(42, Math.min(availW / COLS, availH / ROWS));
+          const bw = cell * COLS,
+            bh = cell * ROWS;
+          bx = (W - bw) / 2;
+          by = padTop + Math.max(0, (availH - bh) / 2);
+          rh = cell * 0.3;
+          mr = cell * 0.235;
+          for (const h of holes) {
+            h.cx = bx + (h.i + 0.5) * cell;
+            h.cy = by + (h.j + 0.62) * cell;
+          }
+          bgG = x.createRadialGradient(
+            W * 0.5,
+            H * 0.12,
+            0,
+            W * 0.5,
+            H * 0.55,
+            Math.max(W, H) * 0.85,
+          );
+          bgG.addColorStop(0, "#17222f");
+          bgG.addColorStop(0.55, "#0b1018");
+          bgG.addColorStop(1, "#04060a");
+          holeG = x.createRadialGradient(
+            0,
+            -rh * 0.15,
+            rh * 0.05,
+            0,
+            0,
+            rh * 1.05,
+          );
+          holeG.addColorStop(0, "#281a09");
+          holeG.addColorStop(0.7, "#150d04");
+          holeG.addColorStop(1, "#060302");
+          moleG = x.createRadialGradient(
+            -mr * 0.35,
+            -mr * 0.45,
+            mr * 0.1,
+            0,
+            0,
+            mr * 1.15,
+          );
+          moleG.addColorStop(0, "#bd8d61");
+          moleG.addColorStop(0.55, "#8a5a34");
+          moleG.addColorStop(1, "#5a3620");
+          bombG = x.createRadialGradient(
+            -mr * 0.35,
+            -mr * 0.4,
+            mr * 0.08,
+            0,
+            0,
+            mr * 1.15,
+          );
+          bombG.addColorStop(0, "#4c5568");
+          bombG.addColorStop(1, "#141822");
+        }
 
-let AC=null;
-function actx(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null;}}if(AC&&AC.state==="suspended")AC.resume();return AC;}
-function tone(type,f0,f1,dur,vol,delay){
-  if(!sound)return;const a=actx();if(!a)return;
-  const t=a.currentTime+(delay||0),o=a.createOscillator(),g=a.createGain();
-  o.type=type;o.frequency.setValueAtTime(f0,t);
-  if(f1!==f0)o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),t+dur);
-  g.gain.setValueAtTime(.0001,t);
-  g.gain.exponentialRampToValueAtTime(vol,t+.008);
-  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.03);
-}
-function noise(dur,vol,delay){
-  if(!sound)return;const a=actx();if(!a)return;
-  const t=a.currentTime+(delay||0),n=Math.max(1,Math.floor(a.sampleRate*dur));
-  const b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);
-  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
-  const s=a.createBufferSource(),g=a.createGain();
-  s.buffer=b;g.gain.value=vol;s.connect(g);g.connect(a.destination);s.start(t);
-}
-function sfx(k){
-  if(!sound)return;
-  switch(k){
-    case"hit":tone("square",680,190,.11,.2);tone("sine",1400,700,.06,.08);break;
-    case"combo":tone("sine",900,1900,.13,.14);break;
-    case"whiff":tone("triangle",230,120,.07,.06);break;
-    case"miss":tone("sawtooth",320,70,.28,.15);break;
-    case"bomb":noise(.3,.32,0);tone("sawtooth",220,40,.35,.2);break;
-    case"over":tone("square",500,80,.5,.16);tone("sine",300,60,.7,.12,.1);break;
-    case"ui":tone("sine",520,760,.06,.1);break;
-  }
-}
+        let AC = null;
+        function actx() {
+          if (!AC) {
+            try {
+              AC = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+              AC = null;
+            }
+          }
+          if (AC && AC.state === "suspended") AC.resume();
+          return AC;
+        }
+        function tone(type, f0, f1, dur, vol, delay) {
+          if (!sound) return;
+          const a = actx();
+          if (!a) return;
+          const t = a.currentTime + (delay || 0),
+            o = a.createOscillator(),
+            g = a.createGain();
+          o.type = type;
+          o.frequency.setValueAtTime(f0, t);
+          if (f1 !== f0)
+            o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(vol, t + 0.008);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          o.connect(g);
+          g.connect(a.destination);
+          o.start(t);
+          o.stop(t + dur + 0.03);
+        }
+        function noise(dur, vol, delay) {
+          if (!sound) return;
+          const a = actx();
+          if (!a) return;
+          const t = a.currentTime + (delay || 0),
+            n = Math.max(1, Math.floor(a.sampleRate * dur));
+          const b = a.createBuffer(1, n, a.sampleRate),
+            d = b.getChannelData(0);
+          for (let i = 0; i < n; i++)
+            d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+          const s = a.createBufferSource(),
+            g = a.createGain();
+          s.buffer = b;
+          g.gain.value = vol;
+          s.connect(g);
+          g.connect(a.destination);
+          s.start(t);
+        }
+        function sfx(k) {
+          if (!sound) return;
+          switch (k) {
+            case "hit":
+              tone("square", 680, 190, 0.11, 0.2);
+              tone("sine", 1400, 700, 0.06, 0.08);
+              break;
+            case "combo":
+              tone("sine", 900, 1900, 0.13, 0.14);
+              break;
+            case "whiff":
+              tone("triangle", 230, 120, 0.07, 0.06);
+              break;
+            case "miss":
+              tone("sawtooth", 320, 70, 0.28, 0.15);
+              break;
+            case "bomb":
+              noise(0.3, 0.32, 0);
+              tone("sawtooth", 220, 40, 0.35, 0.2);
+              break;
+            case "over":
+              tone("square", 500, 80, 0.5, 0.16);
+              tone("sine", 300, 60, 0.7, 0.12, 0.1);
+              break;
+            case "ui":
+              tone("sine", 520, 760, 0.06, 0.1);
+              break;
+          }
+        }
 
-function diff(){return Math.min(1,elapsed/42);}
-function spawnInt(){return .80-.48*diff()+Math.random()*.18;}
-function spawn(){
-  const d=diff(),max=1+Math.floor(d*3);
-  let active=0;for(let i=0;i<holes.length;i++)if(holes[i].st!=="empty")active++;
-  if(active>=max)return;
-  const free=[];for(let i=0;i<holes.length;i++)if(holes[i].st==="empty")free.push(holes[i]);
-  if(!free.length)return;
-  const h=free[(Math.random()*free.length)|0];
-  h.type=Math.random()<d*.16?1:0;h.st="rise";h.t=0;h.sq=0;h.hitT=0;
-  h.dur=1.20-.65*d+Math.random()*.25;
-}
-function addFx(px,py,txt,col){fx.push({x:px,y:py,t:0,d:.8,txt,col});}
-function escaped(h){
-  if(h.type===1){h.st="empty";return;}
-  h.st="empty";h.sq=0;combo=0;lives--;sfx("miss");
-  if(lives<=0)gameOver();
-}
-function doHit(h){
-  h.st="hit";h.hitT=.12;h.sq=.15;
-  if(h.type===1){
-    combo=0;lives--;timeLeft=Math.max(0,timeLeft-2);shake=shk(16);sfx("bomb");
-    addFx(h.cx,h.cy-cell*.35,"-2s","#ff5566");
-    if(lives<=0)return gameOver();
-  }else{
-    combo++;const mult=Math.min(1+Math.floor(combo/3),9),pts=10*mult;
-    score+=pts;shake=Math.max(shake,shk(5));sfx("hit");
-    if(combo%5===0)sfx("combo");
-    addFx(h.cx,h.cy-cell*.35,"+"+pts,"#ffd257");
-    comboEl.parentNode.classList.remove("pulse");void comboEl.offsetWidth;comboEl.parentNode.classList.add("pulse");
-  }
-}
-function hitAt(px,py){
-  for(let i=0;i<holes.length;i++){
-    const h=holes[i];
-    if(h.st==="empty"||h.st==="hit"||h.t<.3)continue;
-    const cy=h.cy-h.t*mr*1.15+(1-h.t)*rh*.95;
-    const dx=px-h.cx,dy=py-cy,rr=mr*1.35;
-    if(dx*dx+dy*dy<=rr*rr){doHit(h);return;}
-  }
-  sfx("whiff");
-}
-let lastTouchT=-1e9;
-function onDown(e){
-  if(state!==PLAY)return;
-  if(e.cancelable)e.preventDefault();
-  const r=c.getBoundingClientRect();
-  hitAt(e.clientX-r.left,e.clientY-r.top);
-}
-function onTouch(e){
-  if(state!==PLAY)return;
-  if(e.cancelable)e.preventDefault();
-  lastTouchT=performance.now();
-  const t=e.changedTouches&&e.changedTouches[0];if(!t)return;
-  const r=c.getBoundingClientRect();
-  hitAt(t.clientX-r.left,t.clientY-r.top);
-}
-function onMouse(e){
-  if(state!==PLAY)return;
-  if(performance.now()-lastTouchT<700)return;
-  onDown(e);
-}
-const hasPointer=typeof window.PointerEvent==="function"||"onpointerdown"in window;
-if(hasPointer)c.addEventListener("pointerdown",onDown,{passive:false});
-else{
-  c.addEventListener("touchstart",onTouch,{passive:false});
-  c.addEventListener("touchmove",e=>{if(e.cancelable)e.preventDefault();},{passive:false});
-  c.addEventListener("mousedown",onMouse);
-}
+        function diff() {
+          return Math.min(1, elapsed / 42);
+        }
+        function spawnInt() {
+          return 0.8 - 0.48 * diff() + Math.random() * 0.18;
+        }
+        function spawn() {
+          const d = diff(),
+            max = 1 + Math.floor(d * 3);
+          let active = 0;
+          for (let i = 0; i < holes.length; i++)
+            if (holes[i].st !== "empty") active++;
+          if (active >= max) return;
+          const free = [];
+          for (let i = 0; i < holes.length; i++)
+            if (holes[i].st === "empty") free.push(holes[i]);
+          if (!free.length) return;
+          const h = free[(Math.random() * free.length) | 0];
+          h.type = Math.random() < d * 0.16 ? 1 : 0;
+          h.st = "rise";
+          h.t = 0;
+          h.sq = 0;
+          h.hitT = 0;
+          h.dur = 1.2 - 0.65 * d + Math.random() * 0.25;
+        }
+        function addFx(px, py, txt, col) {
+          fx.push({ x: px, y: py, t: 0, d: 0.8, txt, col });
+        }
+        function escaped(h) {
+          if (h.type === 1) {
+            h.st = "empty";
+            return;
+          }
+          h.st = "empty";
+          h.sq = 0;
+          combo = 0;
+          lives--;
+          sfx("miss");
+          if (lives <= 0) gameOver();
+        }
+        function doHit(h) {
+          h.st = "hit";
+          h.hitT = 0.12;
+          h.sq = 0.15;
+          if (h.type === 1) {
+            combo = 0;
+            lives--;
+            timeLeft = Math.max(0, timeLeft - 2);
+            shake = shk(16);
+            sfx("bomb");
+            addFx(h.cx, h.cy - cell * 0.35, "-2s", "#ff5566");
+            if (lives <= 0) return gameOver();
+          } else {
+            combo++;
+            const mult = Math.min(1 + Math.floor(combo / 3), 9),
+              pts = 10 * mult;
+            score += pts;
+            shake = Math.max(shake, shk(5));
+            sfx("hit");
+            if (combo % 5 === 0) sfx("combo");
+            addFx(h.cx, h.cy - cell * 0.35, "+" + pts, "#ffd257");
+            comboEl.parentNode.classList.remove("pulse");
+            void comboEl.offsetWidth;
+            comboEl.parentNode.classList.add("pulse");
+          }
+        }
+        function hitAt(px, py) {
+          for (let i = 0; i < holes.length; i++) {
+            const h = holes[i];
+            if (h.st === "empty" || h.st === "hit" || h.t < 0.3) continue;
+            const cy = h.cy - h.t * mr * 1.15 + (1 - h.t) * rh * 0.95;
+            const dx = px - h.cx,
+              dy = py - cy,
+              rr = mr * 1.35;
+            if (dx * dx + dy * dy <= rr * rr) {
+              doHit(h);
+              return;
+            }
+          }
+          sfx("whiff");
+        }
+        let lastTouchT = -1e9;
+        function onDown(e) {
+          if (state !== PLAY) return;
+          if (e.cancelable) e.preventDefault();
+          const r = c.getBoundingClientRect();
+          hitAt(e.clientX - r.left, e.clientY - r.top);
+        }
+        function onTouch(e) {
+          if (state !== PLAY) return;
+          if (e.cancelable) e.preventDefault();
+          lastTouchT = performance.now();
+          const t = e.changedTouches && e.changedTouches[0];
+          if (!t) return;
+          const r = c.getBoundingClientRect();
+          hitAt(t.clientX - r.left, t.clientY - r.top);
+        }
+        function onMouse(e) {
+          if (state !== PLAY) return;
+          if (performance.now() - lastTouchT < 700) return;
+          onDown(e);
+        }
+        const hasPointer =
+          typeof window.PointerEvent === "function" ||
+          "onpointerdown" in window;
+        if (hasPointer)
+          c.addEventListener("pointerdown", onDown, { passive: false });
+        else {
+          c.addEventListener("touchstart", onTouch, { passive: false });
+          c.addEventListener(
+            "touchmove",
+            (e) => {
+              if (e.cancelable) e.preventDefault();
+            },
+            { passive: false },
+          );
+          c.addEventListener("mousedown", onMouse);
+        }
 
-function update(dt){
-  elapsed+=dt;timeLeft-=dt;
-  if(timeLeft<=0){timeLeft=0;return gameOver("TIME UP");}
-  spawnT-=dt;
-  if(spawnT<=0){spawn();spawnT=spawnInt();}
-  for(let i=0;i<holes.length;i++){
-    const h=holes[i];
-    if(h.st==="empty"){if(h.sq>0)h.sq=Math.max(0,h.sq-dt*8);continue;}
-    if(h.st==="rise"){h.t+=dt/.10;if(h.t>=1){h.t=1;h.st="up";}}
-    else if(h.st==="up"){h.dur-=dt;if(h.dur<=0){h.st="fall";h.t=1;}}
-    else if(h.st==="fall"){h.t-=dt/.14;if(h.t<=0){h.t=0;escaped(h);}}
-    else if(h.st==="hit"){h.hitT-=dt;h.sq=Math.min(1,(.12-h.hitT)*12);if(h.hitT<=0){h.st="empty";h.sq=0;}}
-    if(state!==PLAY)return;
-  }
-}
+        function update(dt) {
+          elapsed += dt;
+          timeLeft -= dt;
+          if (timeLeft <= 0) {
+            timeLeft = 0;
+            return gameOver("TIME UP");
+          }
+          spawnT -= dt;
+          if (spawnT <= 0) {
+            spawn();
+            spawnT = spawnInt();
+          }
+          for (let i = 0; i < holes.length; i++) {
+            const h = holes[i];
+            if (h.st === "empty") {
+              if (h.sq > 0) h.sq = Math.max(0, h.sq - dt * 8);
+              continue;
+            }
+            if (h.st === "rise") {
+              h.t += dt / 0.1;
+              if (h.t >= 1) {
+                h.t = 1;
+                h.st = "up";
+              }
+            } else if (h.st === "up") {
+              h.dur -= dt;
+              if (h.dur <= 0) {
+                h.st = "fall";
+                h.t = 1;
+              }
+            } else if (h.st === "fall") {
+              h.t -= dt / 0.14;
+              if (h.t <= 0) {
+                h.t = 0;
+                escaped(h);
+              }
+            } else if (h.st === "hit") {
+              h.hitT -= dt;
+              h.sq = Math.min(1, (0.12 - h.hitT) * 12);
+              if (h.hitT <= 0) {
+                h.st = "empty";
+                h.sq = 0;
+              }
+            }
+            if (state !== PLAY) return;
+          }
+        }
 
-function drawHoleBack(h){
-  x.save();x.translate(h.cx,h.cy+rh*.30);x.scale(1,.5);
-  x.fillStyle="rgba(92,68,38,.30)";x.beginPath();x.arc(0,0,rh*1.2,0,TAU);x.fill();x.restore();
-  x.save();x.translate(h.cx,h.cy);x.scale(1,.6);
-  x.fillStyle=holeG;x.beginPath();x.arc(0,0,rh,0,TAU);x.fill();
-  x.strokeStyle="rgba(255,175,85,.10)";x.lineWidth=rh*.16;
-  x.beginPath();x.arc(0,0,rh*.86,Math.PI*1.05,Math.PI*1.95);x.stroke();
-  x.restore();
-}
-function drawHoleFront(h){
-  x.save();x.translate(h.cx,h.cy);x.scale(1,.6);
-  x.fillStyle="#060302";x.beginPath();x.arc(0,0,rh,0,Math.PI);x.fill();
-  x.restore();
-}
-function drawMole(h){
-  const r=mr;
-  const v=h.st==="hit"?1:h.t;
-  const cy=h.cy-v*r*1.15+(1-v)*rh*.95;
-  const sq=h.sq||0;
-  x.save();x.translate(h.cx,cy);x.scale(1+sq*.5,1-sq*.42);
-  if(h.type===1){
-    x.fillStyle=bombG;x.beginPath();x.arc(0,0,r,0,TAU);x.fill();
-    x.strokeStyle="#8a93a6";x.lineWidth=r*.13;
-    x.beginPath();x.moveTo(r*.28,-r*.88);x.quadraticCurveTo(r*.85,-r*1.45,r*.5,-r*1.75);x.stroke();
-    x.fillStyle="#ffd257";x.beginPath();x.arc(r*.5,-r*1.78,r*.17,0,TAU);x.fill();
-    x.fillStyle="rgba(255,255,255,.26)";x.beginPath();x.arc(-r*.35,-r*.38,r*.22,0,TAU);x.fill();
-    x.fillStyle="#ff5566";x.beginPath();x.arc(-r*.28,-r*.02,r*.09,0,TAU);x.arc(r*.28,-r*.02,r*.09,0,TAU);x.fill();
-  }else{
-    x.fillStyle="#6d4527";
-    x.beginPath();x.arc(-r*.66,-r*.72,r*.30,0,TAU);x.arc(r*.66,-r*.72,r*.30,0,TAU);x.fill();
-    x.fillStyle=moleG;x.beginPath();x.arc(0,0,r,0,TAU);x.fill();
-    x.fillStyle="rgba(232,196,156,.5)";x.beginPath();x.arc(0,r*.28,r*.58,0,TAU);x.fill();
-    x.fillStyle="#fff";x.beginPath();x.arc(-r*.34,-r*.18,r*.20,0,TAU);x.arc(r*.34,-r*.18,r*.20,0,TAU);x.fill();
-    x.fillStyle="#141414";x.beginPath();x.arc(-r*.31,-r*.15,r*.10,0,TAU);x.arc(r*.37,-r*.15,r*.10,0,TAU);x.fill();
-    x.fillStyle="#e0708a";x.beginPath();x.arc(0,r*.17,r*.16,0,TAU);x.fill();
-  }
-  x.restore();
-}
-function drawFx(dt){
-  x.textAlign="center";x.textBaseline="middle";
-  x.font="800 "+Math.round(cell*.16)+"px ui-sans-serif,system-ui,sans-serif";
-  for(let i=fx.length-1;i>=0;i--){
-    const f=fx[i];f.t+=dt;
-    if(f.t>=f.d){fx.splice(i,1);continue;}
-    const p=f.t/f.d;
-    x.globalAlpha=1-p;x.fillStyle=f.col;
-    x.fillText(f.txt,f.x,f.y-p*cell*.5);
-  }
-  x.globalAlpha=1;
-}
-function render(dt){
-  x.setTransform(DPR,0,0,DPR,0,0);
-  x.fillStyle=bgG;x.fillRect(0,0,W,H);
-  x.save();
-  if(shake>0){x.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake=Math.max(0,shake-dt*60);}
-  for(let i=0;i<holes.length;i++)drawHoleBack(holes[i]);
-  for(let i=0;i<holes.length;i++){
-    const h=holes[i];
-    if(h.st==="empty")continue;
-    x.save();x.beginPath();x.rect(h.cx-cell*.5,h.cy-cell*1.2,cell,cell*1.2+rh*.15);x.clip();
-    drawMole(h);x.restore();
-  }
-  for(let i=0;i<holes.length;i++)drawHoleFront(holes[i]);
-  x.restore();
-  drawFx(dt);
-}
-function loop(ts){
-  requestAnimationFrame(loop);
-  let dt=(ts-last)/1000;last=ts;
-  if(!isFinite(dt)||dt<0)dt=0;if(dt>.05)dt=.05;
-  if(state===PLAY)update(dt);
-  render(dt);
-  syncHUD();
-}
+        function drawHoleBack(h) {
+          x.save();
+          x.translate(h.cx, h.cy + rh * 0.3);
+          x.scale(1, 0.5);
+          x.fillStyle = "rgba(92,68,38,.30)";
+          x.beginPath();
+          x.arc(0, 0, rh * 1.2, 0, TAU);
+          x.fill();
+          x.restore();
+          x.save();
+          x.translate(h.cx, h.cy);
+          x.scale(1, 0.6);
+          x.fillStyle = holeG;
+          x.beginPath();
+          x.arc(0, 0, rh, 0, TAU);
+          x.fill();
+          x.strokeStyle = "rgba(255,175,85,.10)";
+          x.lineWidth = rh * 0.16;
+          x.beginPath();
+          x.arc(0, 0, rh * 0.86, Math.PI * 1.05, Math.PI * 1.95);
+          x.stroke();
+          x.restore();
+        }
+        function drawHoleFront(h) {
+          x.save();
+          x.translate(h.cx, h.cy);
+          x.scale(1, 0.6);
+          x.fillStyle = "#060302";
+          x.beginPath();
+          x.arc(0, 0, rh, 0, Math.PI);
+          x.fill();
+          x.restore();
+        }
+        function drawMole(h) {
+          const r = mr;
+          const v = h.st === "hit" ? 1 : h.t;
+          const cy = h.cy - v * r * 1.15 + (1 - v) * rh * 0.95;
+          const sq = h.sq || 0;
+          x.save();
+          x.translate(h.cx, cy);
+          x.scale(1 + sq * 0.5, 1 - sq * 0.42);
+          if (h.type === 1) {
+            x.fillStyle = bombG;
+            x.beginPath();
+            x.arc(0, 0, r, 0, TAU);
+            x.fill();
+            x.strokeStyle = "#8a93a6";
+            x.lineWidth = r * 0.13;
+            x.beginPath();
+            x.moveTo(r * 0.28, -r * 0.88);
+            x.quadraticCurveTo(r * 0.85, -r * 1.45, r * 0.5, -r * 1.75);
+            x.stroke();
+            x.fillStyle = "#ffd257";
+            x.beginPath();
+            x.arc(r * 0.5, -r * 1.78, r * 0.17, 0, TAU);
+            x.fill();
+            x.fillStyle = "rgba(255,255,255,.26)";
+            x.beginPath();
+            x.arc(-r * 0.35, -r * 0.38, r * 0.22, 0, TAU);
+            x.fill();
+            x.fillStyle = "#ff5566";
+            x.beginPath();
+            x.arc(-r * 0.28, -r * 0.02, r * 0.09, 0, TAU);
+            x.arc(r * 0.28, -r * 0.02, r * 0.09, 0, TAU);
+            x.fill();
+          } else {
+            x.fillStyle = "#6d4527";
+            x.beginPath();
+            x.arc(-r * 0.66, -r * 0.72, r * 0.3, 0, TAU);
+            x.arc(r * 0.66, -r * 0.72, r * 0.3, 0, TAU);
+            x.fill();
+            x.fillStyle = moleG;
+            x.beginPath();
+            x.arc(0, 0, r, 0, TAU);
+            x.fill();
+            x.fillStyle = "rgba(232,196,156,.5)";
+            x.beginPath();
+            x.arc(0, r * 0.28, r * 0.58, 0, TAU);
+            x.fill();
+            x.fillStyle = "#fff";
+            x.beginPath();
+            x.arc(-r * 0.34, -r * 0.18, r * 0.2, 0, TAU);
+            x.arc(r * 0.34, -r * 0.18, r * 0.2, 0, TAU);
+            x.fill();
+            x.fillStyle = "#141414";
+            x.beginPath();
+            x.arc(-r * 0.31, -r * 0.15, r * 0.1, 0, TAU);
+            x.arc(r * 0.37, -r * 0.15, r * 0.1, 0, TAU);
+            x.fill();
+            x.fillStyle = "#e0708a";
+            x.beginPath();
+            x.arc(0, r * 0.17, r * 0.16, 0, TAU);
+            x.fill();
+          }
+          x.restore();
+        }
+        function drawFx(dt) {
+          x.textAlign = "center";
+          x.textBaseline = "middle";
+          x.font =
+            "800 " +
+            Math.round(cell * 0.16) +
+            "px ui-sans-serif,system-ui,sans-serif";
+          for (let i = fx.length - 1; i >= 0; i--) {
+            const f = fx[i];
+            f.t += dt;
+            if (f.t >= f.d) {
+              fx.splice(i, 1);
+              continue;
+            }
+            const p = f.t / f.d;
+            x.globalAlpha = 1 - p;
+            x.fillStyle = f.col;
+            x.fillText(f.txt, f.x, f.y - p * cell * 0.5);
+          }
+          x.globalAlpha = 1;
+        }
+        function render(dt) {
+          x.setTransform(DPR, 0, 0, DPR, 0, 0);
+          x.fillStyle = bgG;
+          x.fillRect(0, 0, W, H);
+          x.save();
+          if (shake > 0) {
+            x.translate(
+              (Math.random() - 0.5) * shake,
+              (Math.random() - 0.5) * shake,
+            );
+            shake = Math.max(0, shake - dt * 60);
+          }
+          for (let i = 0; i < holes.length; i++) drawHoleBack(holes[i]);
+          for (let i = 0; i < holes.length; i++) {
+            const h = holes[i];
+            if (h.st === "empty") continue;
+            x.save();
+            x.beginPath();
+            x.rect(
+              h.cx - cell * 0.5,
+              h.cy - cell * 1.2,
+              cell,
+              cell * 1.2 + rh * 0.15,
+            );
+            x.clip();
+            drawMole(h);
+            x.restore();
+          }
+          for (let i = 0; i < holes.length; i++) drawHoleFront(holes[i]);
+          x.restore();
+          drawFx(dt);
+        }
+        function loop(ts) {
+          requestAnimationFrame(loop);
+          let dt = (ts - last) / 1000;
+          last = ts;
+          if (!isFinite(dt) || dt < 0) dt = 0;
+          if (dt > 0.05) dt = 0.05;
+          if (state === PLAY) update(dt);
+          render(dt);
+          syncHUD();
+        }
 
-function syncHUD(){
-  if(syncHUD.s!==score){syncHUD.s=score;scoreEl.textContent=score;}
-  const m=Math.min(1+Math.floor(combo/3),9);
-  if(syncHUD.m!==m){syncHUD.m=m;comboEl.textContent="x"+m;}
-  const t=Math.ceil(timeLeft);
-  if(syncHUD.t!==t){syncHUD.t=t;timeEl.textContent=t;}
-  timeBox.classList.toggle("low",t<=10);
-  if(syncHUD.l!==lives){syncHUD.l=lives;livesEl.textContent=lives;}
-}
-syncHUD.s=-1;syncHUD.m=-1;syncHUD.t=-1;syncHUD.l=-1;
+        function syncHUD() {
+          if (syncHUD.s !== score) {
+            syncHUD.s = score;
+            scoreEl.textContent = score;
+          }
+          const m = Math.min(1 + Math.floor(combo / 3), 9);
+          if (syncHUD.m !== m) {
+            syncHUD.m = m;
+            comboEl.textContent = "x" + m;
+          }
+          const t = Math.ceil(timeLeft);
+          if (syncHUD.t !== t) {
+            syncHUD.t = t;
+            timeEl.textContent = t;
+          }
+          timeBox.classList.toggle("low", t <= 10);
+          if (syncHUD.l !== lives) {
+            syncHUD.l = lives;
+            livesEl.textContent = lives;
+          }
+        }
+        syncHUD.s = -1;
+        syncHUD.m = -1;
+        syncHUD.t = -1;
+        syncHUD.l = -1;
 
-function showOv(el){[ovStart,ovPause,ovOver].forEach(o=>o.classList.add("hide"));el.classList.remove("hide");}
-function hideOv(){[ovStart,ovPause,ovOver].forEach(o=>o.classList.add("hide"));}
-function setSoundBtn(){$("soundBtn").textContent="SOUND: "+(sound?"ON":"OFF");}
-function startGame(){
-  score=0;combo=0;lives=3;timeLeft=ROUND;elapsed=0;spawnT=.35;shake=0;fx.length=0;
-  for(let i=0;i<holes.length;i++){const h=holes[i];h.st="empty";h.t=0;h.sq=0;h.hitT=0;h.type=0;}
-  state=PLAY;last=performance.now();pauseBtn.style.display="";
-  syncHUD.s=-1;syncHUD.m=-1;syncHUD.t=-1;syncHUD.l=-1;syncHUD();
-  if(sound){const a=actx();if(a&&a.state==="suspended")a.resume();}
-  sfx("ui");hideOv();
-}
-function gameOver(msg){
-  if(state===OVER)return;
-  state=OVER;pauseBtn.style.display="none";
-  if(score>best){best=score;lsSet("wam_best",best);}
-  ovMsg.textContent=msg||"TIME UP";
-  $("ovScore").textContent=score;$("ovBest").textContent=best;
-  sfx("over");showOv(ovOver);
-}
-function pause(){
-  if(state!==PLAY)return;
-  state=PAUSE;setSoundBtn();showOv(ovPause);sfx("ui");
-}
-function resume(){
-  if(state!==PAUSE)return;
-  state=PLAY;last=performance.now();hideOv();
-  if(sound){const a=actx();if(a&&a.state==="suspended")a.resume();}
-  sfx("ui");
-}
-function toTitle(){
-  state=MENU;pauseBtn.style.display="none";
-  best0.textContent=best;showOv(ovStart);sfx("ui");
-}
+        function showOv(el) {
+          [ovStart, ovPause, ovOver].forEach((o) => o.classList.add("hide"));
+          el.classList.remove("hide");
+        }
+        function hideOv() {
+          [ovStart, ovPause, ovOver].forEach((o) => o.classList.add("hide"));
+        }
+        function setSoundBtn() {
+          $("soundBtn").textContent = "SOUND: " + (sound ? "ON" : "OFF");
+        }
+        function startGame() {
+          score = 0;
+          combo = 0;
+          lives = 3;
+          timeLeft = ROUND;
+          elapsed = 0;
+          spawnT = 0.35;
+          shake = 0;
+          fx.length = 0;
+          for (let i = 0; i < holes.length; i++) {
+            const h = holes[i];
+            h.st = "empty";
+            h.t = 0;
+            h.sq = 0;
+            h.hitT = 0;
+            h.type = 0;
+          }
+          state = PLAY;
+          last = performance.now();
+          pauseBtn.style.display = "";
+          syncHUD.s = -1;
+          syncHUD.m = -1;
+          syncHUD.t = -1;
+          syncHUD.l = -1;
+          syncHUD();
+          if (sound) {
+            const a = actx();
+            if (a && a.state === "suspended") a.resume();
+          }
+          sfx("ui");
+          hideOv();
+        }
+        function gameOver(msg) {
+          if (state === OVER) return;
+          state = OVER;
+          pauseBtn.style.display = "none";
+          if (score > best) {
+            best = score;
+            lsSet("wam_best", best);
+          }
+          ovMsg.textContent = msg || "TIME UP";
+          $("ovScore").textContent = score;
+          $("ovBest").textContent = best;
+          sfx("over");
+          showOv(ovOver);
+        }
+        function pause() {
+          if (state !== PLAY) return;
+          state = PAUSE;
+          setSoundBtn();
+          showOv(ovPause);
+          sfx("ui");
+        }
+        function resume() {
+          if (state !== PAUSE) return;
+          state = PLAY;
+          last = performance.now();
+          hideOv();
+          if (sound) {
+            const a = actx();
+            if (a && a.state === "suspended") a.resume();
+          }
+          sfx("ui");
+        }
+        function toTitle() {
+          state = MENU;
+          pauseBtn.style.display = "none";
+          best0.textContent = best;
+          showOv(ovStart);
+          sfx("ui");
+        }
 
-$("playBtn").addEventListener("click",startGame);
-$("retryBtn").addEventListener("click",startGame);
-$("resumeBtn").addEventListener("click",resume);
-$("restartBtn").addEventListener("click",startGame);
-$("menuBtn").addEventListener("click",toTitle);
-$("titleBtn").addEventListener("click",toTitle);
-$("soundBtn").addEventListener("click",()=>{sound=!sound;lsSet("wam_snd",sound?"1":"0");setSoundBtn();sfx("ui");});
-pauseBtn.addEventListener("click",pause);
-c.addEventListener("contextmenu",e=>e.preventDefault());
-window.addEventListener("keydown",e=>{
-  if(e.key==="Escape"||e.key==="p"||e.key==="P"){
-    e.preventDefault();
-    if(state===PLAY)pause();else if(state===PAUSE)resume();
-  }
-});
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){
-    if(AC&&AC.state==="running"){try{AC.suspend();}catch(e){}}
-    if(state===PLAY)pause();
-  }
-});
-window.addEventListener("blur",()=>{if(state===PLAY)pause();});
-window.addEventListener("pagehide",()=>{if(state===PLAY)pause();});
-window.addEventListener("resize",resize);
-window.addEventListener("orientationchange",()=>setTimeout(resize,120));
-document.addEventListener("gesturestart",e=>e.preventDefault());
+        $("playBtn").addEventListener("click", startGame);
+        $("retryBtn").addEventListener("click", startGame);
+        $("resumeBtn").addEventListener("click", resume);
+        $("restartBtn").addEventListener("click", startGame);
+        $("menuBtn").addEventListener("click", toTitle);
+        $("titleBtn").addEventListener("click", toTitle);
+        $("soundBtn").addEventListener("click", () => {
+          sound = !sound;
+          lsSet("wam_snd", sound ? "1" : "0");
+          setSoundBtn();
+          sfx("ui");
+        });
+        pauseBtn.addEventListener("click", pause);
+        c.addEventListener("contextmenu", (e) => e.preventDefault());
+        window.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" || e.key === "p" || e.key === "P") {
+            e.preventDefault();
+            if (state === PLAY) pause();
+            else if (state === PAUSE) resume();
+          }
+        });
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            if (AC && AC.state === "running") {
+              try {
+                AC.suspend();
+              } catch (e) {}
+            }
+            if (state === PLAY) pause();
+          }
+        });
+        window.addEventListener("blur", () => {
+          if (state === PLAY) pause();
+        });
+        window.addEventListener("pagehide", () => {
+          if (state === PLAY) pause();
+        });
+        window.addEventListener("resize", resize);
+        window.addEventListener("orientationchange", () =>
+          setTimeout(resize, 120),
+        );
+        document.addEventListener("gesturestart", (e) => e.preventDefault());
 
-resize();
-best0.textContent=best;setSoundBtn();
-syncHUD();
-requestAnimationFrame(loop);
-})();
-</script>
-</body>
+        resize();
+        best0.textContent = best;
+        setSoundBtn();
+        syncHUD();
+        requestAnimationFrame(loop);
+      })();
+    </script>
+  </body>
 </html>
