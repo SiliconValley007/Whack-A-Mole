@@ -20,18 +20,29 @@
       property="og:description"
       content="AAA Whack-A-Mole - fast arcade reflex game, vanilla JS, 60fps."
     />
-    <meta property="og:url" content="https://siliconvalley007.github.io/Whack-A-Mole/" />
-    <meta property="og:image" content="https://siliconvalley007.github.io/Whack-A-Mole/og-image.png" />
+    <meta
+      property="og:url"
+      content="https://siliconvalley007.github.io/Whack-A-Mole/"
+    />
+    <meta
+      property="og:image"
+      content="https://siliconvalley007.github.io/Whack-A-Mole/og-image.png"
+    />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://siliconvalley007.github.io/Whack-A-Mole/og-image.png" />
-    <link rel="canonical" href="https://siliconvalley007.github.io/Whack-A-Mole/" />
+    <meta
+      name="twitter:image"
+      content="https://siliconvalley007.github.io/Whack-A-Mole/og-image.png"
+    />
+    <link
+      rel="canonical"
+      href="https://siliconvalley007.github.io/Whack-A-Mole/"
+    />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1018'/%3E%3Cellipse cx='32' cy='44' rx='22' ry='9' fill='%23150d04'/%3E%3Ccircle cx='32' cy='30' r='16' fill='%238a5a34'/%3E%3Ccircle cx='26' cy='27' r='3' fill='%23fff'/%3E%3Ccircle cx='38' cy='27' r='3' fill='%23fff'/%3E%3Ccircle cx='32' cy='36' r='3' fill='%23e0708a'/%3E%3C/svg%3E"
     />
     <title>Whack-A-Mole</title>
     <link rel="stylesheet" href="style.css?v=11" />
-
   </head>
   <body>
     <noscript
@@ -74,14 +85,24 @@
         CRYSTAL = FREEZE. HELMET NEEDS TWO HITS.
       </p>
       <button class="btn" type="button" id="playBtn">PLAY</button>
-      <button class="btn alt" type="button" id="dailyBtn">DAILY CHALLENGE</button>
+      <button class="btn alt" type="button" id="dailyBtn">
+        DAILY CHALLENGE
+      </button>
       <button class="btn alt" type="button" id="wkBtn">WEEKLY CHALLENGE</button>
       <button class="btn alt" type="button" id="zenBtn">ZEN MODE</button>
-      <button class="btn alt" type="button" id="diffBtn">DIFFICULTY: NORMAL</button>
+      <button class="btn alt" type="button" id="diffBtn">
+        DIFFICULTY: NORMAL
+      </button>
       <button class="btn alt" type="button" id="setBtn">SETTINGS</button>
       <button class="btn alt" type="button" id="statBtn">STATS</button>
       <button class="btn alt" type="button" id="achBtn">ACHIEVEMENTS</button>
-      <button class="btn alt" type="button" id="instBtn" hidden aria-label="Install app">
+      <button
+        class="btn alt"
+        type="button"
+        id="instBtn"
+        hidden
+        aria-label="Install app"
+      >
         INSTALL
       </button>
       <p class="k">BEST <b id="best0">0</b></p>
@@ -117,22 +138,46 @@
       <button class="btn alt" type="button" id="hapBtn">HAPTICS: ON</button>
       <button class="btn alt" type="button" id="shkBtn">SHAKE: ON</button>
       <button class="btn alt" type="button" id="rmBtn">MOTION: AUTO</button>
-      <button class="btn alt" type="button" id="themeBtn">THEME: DEFAULT</button>
+      <button class="btn alt" type="button" id="themeBtn">
+        THEME: DEFAULT
+      </button>
       <button class="btn alt" type="button" id="cbBtn">COLORBLIND: OFF</button>
       <button class="btn alt" type="button" id="cosBtn">COSMETICS</button>
       <button class="btn alt" type="button" id="fsBtn">FULLSCREEN</button>
       <button class="btn alt" type="button" id="exportBtn">EXPORT SAVE</button>
       <button class="btn alt" type="button" id="importBtn">IMPORT SAVE</button>
-      <input id="importFile" type="file" accept="application/json,.json" hidden aria-label="Import save file" />
-      <button class="btn alt" type="button" id="tutReplay">REPLAY TUTORIAL</button>
+      <input
+        id="importFile"
+        type="file"
+        accept="application/json,.json"
+        hidden
+        aria-label="Import save file"
+      />
+      <button class="btn alt" type="button" id="tutReplay">
+        REPLAY TUTORIAL
+      </button>
       <button class="btn alt" type="button" id="resetBtn">RESET DATA</button>
       <button class="btn" type="button" id="setBack">BACK</button>
     </div>
     <div role="dialog" aria-modal="true" id="ovCos" class="ov hide">
       <h2>COSMETICS</h2>
       <p id="cosP"></p>
-      <button class="btn alt" type="button" id="skinBtn" aria-label="Cycle mallet skin">MALLET: CLASSIC</button>
-      <button class="btn alt" type="button" id="boardBtn" aria-label="Cycle board theme">BOARD: NIGHT</button>
+      <button
+        class="btn alt"
+        type="button"
+        id="skinBtn"
+        aria-label="Cycle mallet skin"
+      >
+        MALLET: CLASSIC
+      </button>
+      <button
+        class="btn alt"
+        type="button"
+        id="boardBtn"
+        aria-label="Cycle board theme"
+      >
+        BOARD: NIGHT
+      </button>
       <button class="btn" type="button" id="cosBack">BACK</button>
     </div>
     <div role="dialog" aria-modal="true" id="ovStat" class="ov hide">
@@ -155,11 +200,16 @@
     <div id="fpsOv" class="fps hide" aria-hidden="true"></div>
     <div id="upd" class="toast hide" role="status">Update ready - reload</div>
     <div id="ach" class="toast hide" role="status"></div>
-    <div id="errOv" class="ov hide" role="alertdialog" aria-modal="true" style="z-index:40">
+    <div
+      id="errOv"
+      class="ov hide"
+      role="alertdialog"
+      aria-modal="true"
+      style="z-index: 40"
+    >
       <h2>Something went wrong</h2>
       <button class="btn" type="button" id="errReload">Reload</button>
     </div>
     <script src="game.js?v=11" defer></script>
-
   </body>
 </html>

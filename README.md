@@ -34,26 +34,26 @@ Fast arcade reflex game. Vanilla JS + Canvas 2D + Web Audio, no libraries or CDN
 
 ## Controls
 
-| Input | Action |
-|---|---|
-| Tap / click / multi-touch | Whack the nearest risen target |
-| 1-9 / Numpad 1-9 | Hit the matching 3x3 hole (numpad layout) |
-| Q W E / A S D / Z X C | Alternate 3x3 layout |
-| Gamepad d-pad / stick | Move hole cursor |
-| Gamepad A or X | Whack highlighted hole |
-| Gamepad B or Start | Pause / resume |
-| Esc / P | Pause / resume (works during the 3-2-1 countdown) |
-| Enter / Space | Activate the primary button on a menu |
-| Pause button | Pause during play or countdown (hidden on menus) |
+| Input                     | Action                                            |
+| ------------------------- | ------------------------------------------------- |
+| Tap / click / multi-touch | Whack the nearest risen target                    |
+| 1-9 / Numpad 1-9          | Hit the matching 3x3 hole (numpad layout)         |
+| Q W E / A S D / Z X C     | Alternate 3x3 layout                              |
+| Gamepad d-pad / stick     | Move hole cursor                                  |
+| Gamepad A or X            | Whack highlighted hole                            |
+| Gamepad B or Start        | Pause / resume                                    |
+| Esc / P                   | Pause / resume (works during the 3-2-1 countdown) |
+| Enter / Space             | Activate the primary button on a menu             |
+| Pause button              | Pause during play or countdown (hidden on menus)  |
 
 ## Modes
 
-| Mode | Rules |
-|---|---|
-| Easy / Normal / Hard | 60s, 3 lives, bombs, frenzy, grid unlock; Boss on Normal/Hard |
-| Daily Challenge | Same as the selected difficulty, date-seeded spawns, own daily best |
-| Weekly Challenge | ISO-week seeded Daily-style modifiers, 60s, own weekly best (`wam_wk_<YYYYWW>`), last 4 weeks kept |
-| Zen | No timer, 5 lives, no bombs, spawn capped at Normal mid-rate, own best, only First Whack achievement |
+| Mode                 | Rules                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| Easy / Normal / Hard | 60s, 3 lives, bombs, frenzy, grid unlock; Boss on Normal/Hard                                        |
+| Daily Challenge      | Same as the selected difficulty, date-seeded spawns, own daily best                                  |
+| Weekly Challenge     | ISO-week seeded Daily-style modifiers, 60s, own weekly best (`wam_wk_<YYYYWW>`), last 4 weeks kept   |
+| Zen                  | No timer, 5 lives, no bombs, spawn capped at Normal mid-rate, own best, only First Whack achievement |
 
 Query shortcuts: `?mode=play`, `?mode=daily`, and `?mode=weekly` (PWA shortcuts). First-run tutorial still shows if `wam_tut` is unset, then the requested mode starts.
 
@@ -61,16 +61,16 @@ Query shortcuts: `?mode=play`, `?mode=daily`, and `?mode=weekly` (PWA shortcuts)
 
 Round length: 60 seconds (except Zen / tutorial). Missed brown/helmet/boss moles cost a life. Game ends at 0 lives or 0 time.
 
-| Target | Shape (colorblind-safe) | Effect |
-|---|---|---|
-| Brown mole | Round head + ears | +10 x combo multiplier |
-| Gold mole | Star burst body | 5x points, short-lived; one SFX |
-| Bomb | Spiked circle + fuse | -1 life, -2s, combo reset, red flash |
-| Green heart | Heart | +1 life (max 5) |
-| Blue freeze | Hex crystal + snowflake | Freeze timer 3s, icy vignette |
-| Helmet mole | Round head + visor | 2 hits (clang then 2x score) |
-| Double Score | Diamond + ring | x2 points for 6s, gold HUD ring |
-| Boss Mole | Large mole + HP bar | 5 hits, 500 points, once at 40s on Normal/Hard |
+| Target       | Shape (colorblind-safe) | Effect                                         |
+| ------------ | ----------------------- | ---------------------------------------------- |
+| Brown mole   | Round head + ears       | +10 x combo multiplier                         |
+| Gold mole    | Star burst body         | 5x points, short-lived; one SFX                |
+| Bomb         | Spiked circle + fuse    | -1 life, -2s, combo reset, red flash           |
+| Green heart  | Heart                   | +1 life (max 5)                                |
+| Blue freeze  | Hex crystal + snowflake | Freeze timer 3s, icy vignette                  |
+| Helmet mole  | Round head + visor      | 2 hits (clang then 2x score)                   |
+| Double Score | Diamond + ring          | x2 points for 6s, gold HUD ring                |
+| Boss Mole    | Large mole + HP bar     | 5 hits, 500 points, once at 40s on Normal/Hard |
 
 Combo: each hit raises the chain. Multiplier is `min(1 + floor(combo / 3), 9)`. No hit for 1.5s decays the combo to 0. During Frenzy, points are doubled. Double Score stacks with Frenzy. Grid unlocks at score > 1500.
 
@@ -78,14 +78,14 @@ Combo: each hit raises the chain. Multiplier is `min(1 + floor(combo / 3), 9)`. 
 
 Settings > Cosmetics. Locked items show the unlock hint. High contrast remains usable.
 
-| Item | Unlock |
-|---|---|
-| Mallet Classic | Default |
-| Mallet Steel | 100 lifetime hits |
-| Mallet Gold | Play 10 games |
-| Mallet Ice | Best combo 15 |
-| Board Night | Default |
-| Board Dusk | Daily streak 3 |
+| Item           | Unlock            |
+| -------------- | ----------------- |
+| Mallet Classic | Default           |
+| Mallet Steel   | 100 lifetime hits |
+| Mallet Gold    | Play 10 games     |
+| Mallet Ice     | Best combo 15     |
+| Board Night    | Default           |
+| Board Dusk     | Daily streak 3    |
 
 Stored in `wam_skin` (0-3) and `wam_board` (0-1); invalid values fall back to 0.
 
@@ -145,10 +145,6 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000`. The service worker needs http(s). Opening the file directly works without offline caching.
 
-## Deploy to GitHub Pages
-
-Push all files to the repo root. Settings → Pages → Deploy from branch → `main` / root. Live URL: `https://siliconvalley007.github.io/Whack-A-Mole/`. Paths are relative. Scores, settings, cosmetics, and achievements are stored in the player's browser (`localStorage`); there is no server. Include `.nojekyll`. `404.html` redirects to `/Whack-A-Mole/`.
-
 ## SW versioning
 
 Cache name is `VERSION` in `sw.js` (currently `wam-v10`). Core assets (everything in `ASSETS`: `./`, `index.html`, `style.css?v=10`, `game.js?v=10`, the manifest, and icons) are served **cache-first** from the `VERSION` cache with no background `cache.put`; only `install`'s `addAll` writes them, so core files can never mix versions. `index.html` loads `style.css?v=10` and `game.js?v=10`, and the same `?v=` strings live in `ASSETS`. Non-core same-origin GET uses stale-while-revalidate with `ignoreSearch`, caching only `res.ok && res.type === "basic"`. Navigation failure falls back to `index.html`. Non-navigation cache miss with the network down returns `Response.error()`. A waiting worker shows **Update ready - reload**; clicking it posts `SKIP_WAITING` and reloads exactly once on `controllerchange` (guarded against reload loops).
@@ -181,12 +177,14 @@ README.md
 ## Changelog
 
 ### v10
+
 - Input-aware hole selector: hidden until keyboard/gamepad hole input; fades ~120ms; hides on pointer/touch; reset on start/menu/game over
 - Moon sits below the HUD safe zone (cached HUD rect on resize) so it never clips behind HUD cards
 - Input-aware tutorial hints: touch-only devices see tap wording and skip the keys slide
 - UI audit: `:focus-visible` only, canvas/HUD no tap-highlight or selection, cursor hidden on canvas
 
 ### v9
+
 - SW `wam-v9`: core assets (`ASSETS`) served cache-first with no background `cache.put`; only `install`'s `addAll` writes them, preventing cross-version mixes
 - Non-core same-origin GET stays stale-while-revalidate; offline navigation still falls back to `index.html`
 - `index.html` loads `style.css?v=9` / `game.js?v=9`; the same `?v=` strings live in `ASSETS`
@@ -194,6 +192,7 @@ README.md
 - Release checklist: bump `VERSION` in `sw.js` and the `?v=` suffix on every release
 
 ### v8
+
 - Split CSS/JS: `style.css` + `game.js` (defer); SW `wam-v8` precaches both
 - Hardened save import: whitelist known keys, clamp/shape checks, ignore unknown, reject on any known-key failure; export blob URL revoked
 - Replay Tutorial in Settings
@@ -201,11 +200,13 @@ README.md
 - Weekly Challenge: ISO-week Daily-style modifiers, `wam_wk_<week>`, prune to last 4 weeks; `?mode=weekly`
 
 ### v7
+
 - Absolute OG/canonical URLs at `https://siliconvalley007.github.io/Whack-A-Mole/`
 - 404.html redirects to `/Whack-A-Mole/`; screenshots omitted (no real capture available)
 - SW `wam-v7`; Export/Import save; Daily share summary; `?fps=1`; SR announcements; vibration patterns
 
 ### v6
+
 - Accu dump after the fixed-step loop; accu reset on resume and visibility return
 - 404.html computes Pages root in JS; removed from SW precache
 - Absolute OG/canonical URLs (placeholder until a GitHub remote exists)
@@ -215,12 +216,14 @@ README.md
 - Manifest screenshots; 10fps catch-up stays real-time (max 12 steps)
 
 ### v5
+
 - Fixed 1/120s timestep; Daily identical at 60/144Hz
 - Real maskable 192/512 PNGs; OG image; shortcuts; display_override; 404.html; .nojekyll
 - Wake Lock, error overlay, wam_ver + Reset Data
 - Keyboard / gamepad; layered music; score-card PNG share; Zen; tutorial
 
 ### v4
+
 - Two seeded PRNGs for Daily; skip-safe spawn sampling
 - Resume grace, pointercancel/blur pause, game-over FX clear
 - 4th column fade-in; single layout() path
